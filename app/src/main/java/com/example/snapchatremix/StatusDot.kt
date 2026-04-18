@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.yourapp.snapchatremix.UserStatus
+import com.example.snapchatremix.UserStatus
 
 // 🟢 ACTIVE  = user is in the app and interacting
 // 🔵 IDLE    = open but no interaction for 3+ minutes

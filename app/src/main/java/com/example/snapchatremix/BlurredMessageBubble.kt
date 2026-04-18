@@ -1,11 +1,17 @@
-package com.yourapp.snapchatremix.ui
+package com.example.snapchatremix.ui
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -27,7 +33,7 @@ fun BlurredMessageBubble(
     )
 
     val bubbleColor = if (isSentByMe) Color(0xFF0A84FF) else Color(0xFF2C2C2E)
-    val alignment   = if (isSentByMe) Alignment.End    else Alignment.Start
+    val alignment = if (isSentByMe) Alignment.End else Alignment.Start
 
     Column(
         modifier = modifier.fillMaxWidth(),

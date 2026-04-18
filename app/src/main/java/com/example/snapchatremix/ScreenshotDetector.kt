@@ -1,4 +1,4 @@
-package com.yourapp.snapchatremix
+package com.example.snapchatremix
 
 import android.content.ContentResolver
 import android.database.ContentObserver
@@ -21,18 +21,24 @@ class ScreenshotDetector(
                     MediaStore.Images.Media.DISPLAY_NAME,
                     MediaStore.Images.Media.DATA
                 )
+
                 contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
                     if (cursor.moveToFirst()) {
                         val nameCol = cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
-                        val name = if (nameCol >= 0) cursor.getString(nameCol)?.lowercase() ?: "" else ""
+                        val name = if (nameCol >= 0) {
+                            cursor.getString(nameCol)?.lowercase() ?: ""
+                        } else {
+                            ""
+                        }
+
                         if ("screenshot" in name || "screen_shot" in name || "screen shot" in name) {
-                            // Detected locally — intentionally NOT notifying the other user
                             onScreenshotTaken()
                         }
                     }
                 }
             }
         }
+
         contentResolver.registerContentObserver(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             true,

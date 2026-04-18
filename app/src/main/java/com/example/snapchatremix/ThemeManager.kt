@@ -1,4 +1,4 @@
-package com.yourapp.snapchatremix
+package com.example.snapchatremix
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -9,8 +9,8 @@ object ThemeManager {
     private const val PREF_NAME = "theme_prefs"
     private const val KEY_THEME = "selected_theme"
 
-    const val THEME_LIGHT  = "light"
-    const val THEME_DARK   = "dark"
+    const val THEME_LIGHT = "light"
+    const val THEME_DARK = "dark"
     const val THEME_AMOLED = "amoled"
     const val THEME_SYSTEM = "system"
 
@@ -20,7 +20,7 @@ object ThemeManager {
         prefs.edit().putString(KEY_THEME, theme).apply()
 
         when (theme) {
-            THEME_LIGHT  -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            THEME_LIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             THEME_DARK,
             THEME_AMOLED -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             THEME_SYSTEM -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
