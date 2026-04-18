@@ -1,47 +1,88 @@
 package com.example.snapchatremix
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.snapchatremix.ui.theme.SnapChatRemixTheme
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.core.content.ContextCompat
+import com.yourapp.snapchatremix.ActivityStatusManager
+import com.yourapp.snapchatremix.ScreenshotDetector
 
 class MainActivity : ComponentActivity() {
+    private lateinit var screenshotDetector: ScreenshotDetector
+    private var isScreenshotActive by mutableStateOf(false)
+
+    private val idleHandler = Handler(Looper.getMainLooper())
+    private val idleRunnable = Runnable { ActivityStatusManager.setIdle() }
+    private val IDLE_TIMEOUT_MS = 3 * 60 * 1000L
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) startScreenshotDetector()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            SnapChatRemixTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+
+        ThemeManager.restoreTheme(this)
+
+        ActivityStatusManager.setupOnDisconnect()
+        ActivityStatusManager.setActive()
+
+        val permission =
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU)
+                Manifest.permission.READ_MEDIA_IMAGES
+            else
+                Manifest.permission.READ_EXTERNAL_STORAGE
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            startScreenshotDetector()
+        } else {
+            permissionLauncher.launch(permission)
+        }
+
+    }
+
+    private fun startScreenshotDetector() {
+        screenshotDetector = ScreenshotDetector(contentResolver) {
+            runOnUiThread {
+                isScreenshotActive = true
+                window.decorView.postDelayed({ isScreenshotActive = false }, 4_000)
             }
         }
+        screenshotDetector.start()
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        idleHandler.removeCallbacks(idleRunnable)
+        ActivityStatusManager.setActive()
+        idleHandler.postDelayed(idleRunnable, IDLE_TIMEOUT_MS)
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SnapChatRemixTheme {
-        Greeting("Android")
+    override fun onResume() {
+        super.onResume()
+        ActivityStatusManager.setActive()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ActivityStatusManager.setOffline()
+        idleHandler.removeCallbacks(idleRunnable)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::screenshotDetector.isInitialized) screenshotDetector.stop()
+        idleHandler.removeCallbacks(idleRunnable)
     }
 }
