@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            // Put your UI screens here
+            SnapRemixApp(isScreenshotActive = isScreenshotActive)
         }
     }
 
