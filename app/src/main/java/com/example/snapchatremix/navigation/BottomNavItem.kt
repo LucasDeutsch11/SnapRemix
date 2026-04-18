@@ -44,13 +44,25 @@ sealed class BottomNavItem(
     )
 
     companion object {
-        val defaultOrder: List<BottomNavItem> = listOf(
-            Map,
-            Chat,
-            Camera,
-            Stories,
-            Spotlight
-        )
+        // NOTE: this must be `by lazy`, not an eager `val`. `BottomNavItem` is a
+        // sealed class whose own nested `object` singletons (Map, Chat, ...)
+        // extend it. If we build this list during the companion's class
+        // initializer, we can hit it mid-init — e.g. `BottomNavState`'s default
+        // arg `BottomNavItem.Chat.id` starts Chat's <clinit>, which runs the
+        // BottomNavItem super-constructor, which triggers the companion init,
+        // which references `Chat` before Chat.INSTANCE has been assigned. The
+        // list ends up with a null slot and later NPEs in `getVisibleItems`.
+        // Deferring with `by lazy` guarantees every singleton is fully
+        // constructed before the list is materialized.
+        val defaultOrder: List<BottomNavItem> by lazy {
+            listOf(
+                Map,
+                Chat,
+                Camera,
+                Stories,
+                Spotlight
+            )
+        }
 
         fun fromId(id: String): BottomNavItem? =
             defaultOrder.firstOrNull { it.id == id }
