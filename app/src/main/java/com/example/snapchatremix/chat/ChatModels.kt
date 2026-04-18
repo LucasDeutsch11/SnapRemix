@@ -20,12 +20,29 @@ data class Friend(
  * [fromMe] is `true` for messages the local user sent, `false` for messages
  * received from [Conversation.friend]. The UI aligns the two sides
  * differently based on this flag.
+ *
+ * [replyTo] is non-null when this message was sent as a reply to a previous
+ * one — it holds a snapshot of the quoted content so deleting the original
+ * message doesn't break the reply's preview.
  */
 data class ChatMessage(
     val id: String,
     val fromMe: Boolean,
     val text: String,
     val timestamp: String,
+    val replyTo: ReplySnippet? = null,
+)
+
+/**
+ * A frozen snippet of an older message, shown above a reply so you can see
+ * what the sender was responding to. Kept separate from [ChatMessage] so the
+ * quoted preview survives edits/deletes of the original.
+ */
+data class ReplySnippet(
+    /** Who sent the original message — "You" or the friend's name. */
+    val authorLabel: String,
+    /** Short excerpt of the original message body. */
+    val preview: String,
 )
 
 /**

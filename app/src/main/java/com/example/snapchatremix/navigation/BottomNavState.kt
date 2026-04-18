@@ -23,6 +23,10 @@ class BottomNavState(
     }
 
     fun toggle(item: BottomNavItem, enabled: Boolean) {
+        // Guard: never let the user disable the very last visible tab. An
+        // empty bottom bar traps them with nothing to select.
+        if (!enabled && visibleItems.size <= 1 && item.id !in disabledIds) return
+
         disabledIds = if (enabled) {
             disabledIds - item.id
         } else {

@@ -42,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 fun ChatScreen(
     modifier: Modifier = Modifier,
     conversations: List<Conversation> = ChatRepository.seedConversations,
+    onOpenSettings: () -> Unit = {},
 ) {
     var openFriendId: String? by rememberSaveable { mutableStateOf(null) }
 
@@ -75,6 +76,7 @@ fun ChatScreen(
             ChatListScreen(
                 conversations = conversations,
                 onOpenChat = { openFriendId = it.friend.id },
+                onOpenSettings = onOpenSettings,
             )
         } else {
             ChatThreadScreen(

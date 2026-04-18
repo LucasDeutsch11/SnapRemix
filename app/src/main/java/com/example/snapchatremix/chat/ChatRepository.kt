@@ -1,5 +1,7 @@
 package com.example.snapchatremix.chat
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -10,6 +12,11 @@ import androidx.compose.ui.graphics.Color
  * This is intentionally a singleton `object` (not injected) to keep the
  * footprint small for the SnapRemix prototype. Swap for a proper data
  * source — Room, Firestore, etc. — when the feature graduates.
+ *
+ * Message state: because the repository is a process-scoped singleton,
+ * [messagesFor] returns a Compose-observable list that survives navigating
+ * away from and back to a thread. It's wiped when the process dies — the
+ * prototype has no disk persistence.
  */
 object ChatRepository {
 
@@ -103,4 +110,36 @@ object ChatRepository {
     /** Find a conversation by the friend's id. */
     fun findByFriendId(friendId: String): Conversation? =
         seedConversations.firstOrNull { it.friend.id == friendId }
+
+    // --------------------------------------------------------------------
+    // Process-scoped live message store
+    // --------------------------------------------------------------------
+
+    /**
+     * Per-friend snapshot lists of messages. Lazily seeded on first access
+     * from [seedConversations] so the UI has something to render. Mutations
+     * made by [ChatThreadScreen] (sending, deleting, etc.) land here and are
+     * observable across screens.
+     */
+    private val messageStore: MutableMap<String, SnapshotStateList<ChatMessage>> =
+        mutableMapOf()
+
+    /**
+     * Returns the live message list for [friendId]. The returned list is a
+     * [SnapshotStateList] — Compose observes reads and recomposes on change.
+     * Safe to hand the same list to multiple screens; they'll stay in sync.
+     */
+    fun messagesFor(friendId: String): SnapshotStateList<ChatMessage> {
+        return messageStore.getOrPut(friendId) {
+            val seed = findByFriendId(friendId)?.messages.orEmpty()
+            mutableStateListOf<ChatMessage>().apply { addAll(seed) }
+        }
+    }
+
+    /**
+     * Look up the [Friend] metadata (name, initials, color) for a bookmark
+     * or other secondary view that only has the id.
+     */
+    fun friendFor(friendId: String): Friend? =
+        findByFriendId(friendId)?.friend
 }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +58,7 @@ fun ChatListScreen(
     conversations: List<Conversation>,
     onOpenChat: (Conversation) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
 ) {
     var query by remember { mutableStateOf("") }
     val filtered = remember(conversations, query) {
@@ -64,6 +66,8 @@ fun ChatListScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
+        ChatListHeader(onOpenSettings = onOpenSettings)
+        HorizontalDivider()
         ChatSearchBar(
             query = query,
             onQueryChange = { query = it },
@@ -81,6 +85,36 @@ fun ChatListScreen(
                     HorizontalDivider()
                 }
             }
+        }
+    }
+}
+
+/**
+ * Compact app-bar style header above the search field. Holds the screen
+ * title and a trailing settings gear — tapping the gear opens the
+ * Settings surface where the user can hide/show bottom-nav destinations.
+ */
+@Composable
+private fun ChatListHeader(
+    onOpenSettings: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Chat",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = onOpenSettings) {
+            Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = "Open settings",
+            )
         }
     }
 }
